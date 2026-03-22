@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Storytelling by Tvesha</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="stars" aria-hidden="true"></div>
+    <div class="glow glow-1" aria-hidden="true"></div>
+    <div class="glow glow-2" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <p class="tagline">Bedtime stories, just for you</p>
+      <h1>Storytelling by Tvesha</h1>
+    </header>
+
+    <main class="main">
+      <section class="pick-topic-section" aria-label="Choose tonight’s story world">
+        <h2>Which world tonight?</h2>
+        <p class="topic-intro">
+          Pick one of the four topics. Each one holds <strong>five special stories</strong>—long, cozy tales for slow reading aloud. When you’re ready,
+          we’ll open one like a surprise book.
+        </p>
+        <div class="topic-grid" role="group" aria-label="Story topics">
+          <button type="button" class="topic-card unicorn" data-topic="unicorn">
+            <span class="topic-emoji" aria-hidden="true">🦄</span>
+            <span class="topic-name">Unicorn</span>
+            <span class="topic-count">5 stories</span>
+          </button>
+          <button type="button" class="topic-card fantasy" data-topic="fantasy">
+            <span class="topic-emoji" aria-hidden="true">🏰</span>
+            <span class="topic-name">Fantasy</span>
+            <span class="topic-count">5 stories</span>
+          </button>
+          <button type="button" class="topic-card magic" data-topic="magic">
+            <span class="topic-emoji" aria-hidden="true">✨</span>
+            <span class="topic-name">Magic</span>
+            <span class="topic-count">5 stories</span>
+          </button>
+          <button type="button" class="topic-card fairies" data-topic="fairies">
+            <span class="topic-emoji" aria-hidden="true">🧚</span>
+            <span class="topic-name">Fairies</span>
+            <span class="topic-count">5 stories</span>
+          </button>
+        </div>
+        <p class="topic-chosen" id="topicChosen" hidden>
+          Tonight: <strong id="topicChosenLabel"></strong>
+        </p>
+        <div class="topic-actions">
+          <button type="button" class="action-primary" id="btnTonightStory" disabled>
+            Open tonight’s story ✨
+          </button>
+          <button type="button" class="action-secondary" id="btnAnotherStory" disabled>
+            Another story, same topic
+          </button>
+        </div>
+      </section>
+
+      <section class="story-panel" aria-live="polite">
+        <div class="story-toolbar">
+          <button type="button" id="btnRead" class="toolbar-btn primary" disabled>
+            <span aria-hidden="true">🔊</span> Read whole story
+          </button>
+          <button type="button" id="btnRestart" class="toolbar-btn" disabled>
+            <span aria-hidden="true">🔁</span> Restart from start
+          </button>
+          <button type="button" id="btnPause" class="toolbar-btn" disabled>
+            <span aria-hidden="true">⏸</span> Pause
+          </button>
+          <button type="button" id="btnResume" class="toolbar-btn" disabled>
+            <span aria-hidden="true">▶</span> Resume
+          </button>
+          <button type="button" id="btnStop" class="toolbar-btn danger" disabled>
+            <span aria-hidden="true">⏹</span> Stop
+          </button>
+        </div>
+        <div class="story-toolbar story-toolbar-secondary">
+          <span class="toolbar-label">Jump the voice to:</span>
+          <button type="button" id="btnReadBegin" class="toolbar-btn section" disabled>
+            <span aria-hidden="true">🌅</span> Beginning
+          </button>
+          <button type="button" id="btnReadMiddle" class="toolbar-btn section" disabled>
+            <span aria-hidden="true">🌙</span> Middle
+          </button>
+          <button type="button" id="btnReadEnd" class="toolbar-btn section" disabled>
+            <span aria-hidden="true">⭐</span> End
+          </button>
+        </div>
+        <p class="hint">
+          <strong>Read whole story</strong> (and the other buttons) start by saying the story title out loud, then the text. Use <strong>Beginning</strong> / <strong>Middle</strong> / <strong>End</strong> for a section, or <strong>Restart from start</strong> to hear from the title again.
+        </p>
+        <article id="storyContent" class="story-content">
+          <p class="placeholder">
+            Tap a world above—<strong>Unicorn</strong>, <strong>Fantasy</strong>, <strong>Magic</strong>, or <strong>Fairies</strong>—then press
+            <strong>Open tonight’s story</strong>. One of five long tales for that topic will appear here.
+          </p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Made with love · Storytelling by Tvesha</p>
+    </footer>
+
+    <script src="preloaded-stories.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "storytelling-by-tvesha",
+  "private": true,
+  "description": "Bedtime stories for Tvesha — 20 pre-loaded tales (Netlify static or npm start)",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  }
+}
