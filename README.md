@@ -19,7 +19,9 @@ Open **http://localhost:3000** (avoid opening `index.html` as `file://` so scrip
 
 ## Deploy (Netlify)
 
-The site is static files only; **Netlify** can host it without Node. Connect this repo in the Netlify dashboard (**Add new site → Import an existing project → GitHub**), leave the build command as the default from `netlify.toml`, publish directory **`.`**.
+**Live site:** [tvesha-storyteller.netlify.app](https://tvesha-storyteller.netlify.app)
+
+The site is static files only; **Netlify** can host it without Node. This repo is also on GitHub—you can connect it under **Site configuration → Build & deploy → Continuous deployment → Link repository** so every push rebuilds automatically. Publish directory **`.`**, build settings match `netlify.toml`.
 
 ## Change or add stories
 
