@@ -311,34 +311,6 @@ body {
   align-items: center;
 }
 
-.story-toolbar-secondary {
-  margin-bottom: 0.65rem;
-  padding-top: 0.35rem;
-  border-top: 1px dashed rgba(139, 92, 246, 0.35);
-}
-
-.toolbar-label {
-  font-family: "Fredoka", sans-serif;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--purple-deep);
-  width: 100%;
-  margin-bottom: 0.15rem;
-}
-
-@media (min-width: 520px) {
-  .toolbar-label {
-    width: auto;
-    margin-bottom: 0;
-    margin-right: 0.25rem;
-  }
-}
-
-.toolbar-btn.section {
-  border-color: #a78bfa;
-  background: linear-gradient(180deg, #faf5ff, #fff);
-}
-
 .toolbar-btn {
   font-family: "Quicksand", sans-serif;
   font-weight: 600;
@@ -416,6 +388,24 @@ body {
 
 .story-content p:last-child {
   margin-bottom: 0;
+}
+
+.story-moral {
+  margin: 1.25rem 0 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.9rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--purple-deep);
+  background: linear-gradient(135deg, rgba(233, 213, 255, 0.65), rgba(251, 207, 232, 0.5));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  line-height: 1.55;
+}
+
+.story-moral::before {
+  content: "Moral · ";
+  font-weight: 700;
+  color: #7c3aed;
 }
 
 .story-content .placeholder {

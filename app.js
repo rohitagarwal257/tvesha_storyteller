@@ -9,22 +9,18 @@
   const contentEl = document.getElementById("storyContent");
   const topicChosen = document.getElementById("topicChosen");
   const topicChosenLabel = document.getElementById("topicChosenLabel");
-  const btnTonightStory = document.getElementById("btnTonightStory");
   const btnAnotherStory = document.getElementById("btnAnotherStory");
   const btnRead = document.getElementById("btnRead");
   const btnRestart = document.getElementById("btnRestart");
-  const btnReadBegin = document.getElementById("btnReadBegin");
-  const btnReadMiddle = document.getElementById("btnReadMiddle");
-  const btnReadEnd = document.getElementById("btnReadEnd");
   const btnPause = document.getElementById("btnPause");
   const btnResume = document.getElementById("btnResume");
   const btnStop = document.getElementById("btnStop");
 
   /** @type {string | null} */
   let selectedTopic = null;
-  /** @type {number | null} */
-  let lastIndexForTopic = null;
-  /** @type {{ title: string, paragraphs: string[] } | null} */
+  /** @type {Record<string, number | null>} */
+  let lastIndexByTopic = {};
+  /** @type {{ title: string, paragraphs: string[], moral?: string } | null} */
   let currentStory = null;
   let utteranceQueue = [];
   let queueIndex = 0;
@@ -43,9 +39,6 @@
   function setStoryPlaybackEnabled(on) {
     btnRead.disabled = !on;
     if (btnRestart) btnRestart.disabled = !on;
-    if (btnReadBegin) btnReadBegin.disabled = !on;
-    if (btnReadMiddle) btnReadMiddle.disabled = !on;
-    if (btnReadEnd) btnReadEnd.disabled = !on;
   }
 
   function setSpeakingUi(active) {
@@ -53,9 +46,6 @@
     if (active) {
       btnRead.disabled = true;
       if (btnRestart) btnRestart.disabled = false;
-      if (btnReadBegin) btnReadBegin.disabled = false;
-      if (btnReadMiddle) btnReadMiddle.disabled = false;
-      if (btnReadEnd) btnReadEnd.disabled = false;
       btnPause.disabled = false;
       btnResume.disabled = true;
       btnStop.disabled = false;
@@ -69,26 +59,6 @@
     }
   }
 
-  function getParagraphSliceRange(part) {
-    const n = currentStory?.paragraphs.length ?? 0;
-    if (n === 0) return [0, 0];
-    if (part === "full" || part === "restart") return [0, n];
-    if (n === 1) return [0, 1];
-    if (n === 2) {
-      if (part === "begin") return [0, 1];
-      if (part === "middle") return [1, 2];
-      return [0, 2];
-    }
-    const b = Math.floor(n / 3);
-    const m = Math.floor((2 * n) / 3);
-    const i1 = Math.max(1, b);
-    const i2 = Math.max(i1 + 1, m);
-    if (part === "begin") return [0, i1];
-    if (part === "middle") return [i1, i2];
-    if (part === "end") return [i2, n];
-    return [0, n];
-  }
-
   function scrollToStoryParagraph(index) {
     const el = document.getElementById("story-p-" + index);
     if (el && typeof el.scrollIntoView === "function") {
@@ -98,6 +68,13 @@
 
   function scrollToStoryTitle() {
     const el = document.getElementById("storyTitle");
+    if (el && typeof el.scrollIntoView === "function") {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+
+  function scrollToStoryMoral() {
+    const el = document.getElementById("storyMoral");
     if (el && typeof el.scrollIntoView === "function") {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
@@ -134,6 +111,14 @@
       para.textContent = paraText;
       contentEl.appendChild(para);
     });
+
+    if (story.moral && String(story.moral).trim()) {
+      const moralEl = document.createElement("p");
+      moralEl.id = "storyMoral";
+      moralEl.className = "story-moral";
+      moralEl.textContent = String(story.moral).trim();
+      contentEl.appendChild(moralEl);
+    }
 
     stopSpeechInternal();
     setStoryPlaybackEnabled(true);
@@ -172,7 +157,7 @@
 
     const idx = pickStoryIndex(topic, avoidIndex);
     if (idx === null) return;
-    lastIndexForTopic = idx;
+    lastIndexByTopic[topic] = idx;
     renderStoryData(list[idx]);
   }
 
@@ -185,30 +170,50 @@
     if (selectedTopic && TOPIC_LABELS[selectedTopic]) {
       topicChosen.hidden = false;
       topicChosenLabel.textContent = TOPIC_LABELS[selectedTopic];
-      btnTonightStory.disabled = false;
-      btnAnotherStory.disabled = false;
+      if (btnAnotherStory) btnAnotherStory.disabled = false;
     } else {
       topicChosen.hidden = true;
       topicChosenLabel.textContent = "";
-      btnTonightStory.disabled = true;
-      btnAnotherStory.disabled = true;
+      if (btnAnotherStory) btnAnotherStory.disabled = true;
     }
   }
 
+  /** Prefer natural-sounding English voices when the OS exposes them. */
   function pickVoice() {
     const voices = window.speechSynthesis.getVoices();
-    return (
-      voices.find((v) => /female/i.test(v.name) && v.lang.startsWith("en")) ||
-      voices.find((v) => v.lang.startsWith("en")) ||
-      voices[0] ||
-      null
-    );
+    if (!voices || !voices.length) return null;
+
+    const en = voices.filter((v) => (v.lang || "").toLowerCase().startsWith("en"));
+    const pool = en.length ? en : voices;
+
+    function scoreVoice(v) {
+      const n = (v.name || "").toLowerCase();
+      let score = 0;
+      if (/google|natural|neural|premium|enhanced/.test(n)) score += 5;
+      if (
+        /female|zira|samantha|karen|victoria|hazel|moira|serena|susan|linda|tessa|fiona|flo|google uk english female/.test(n)
+      )
+        score += 3;
+      if (/male|david|daniel|fred|mark/.test(n)) score -= 2;
+      return score;
+    }
+
+    let best = pool[0];
+    let bestScore = scoreVoice(best);
+    for (let i = 1; i < pool.length; i++) {
+      const s = scoreVoice(pool[i]);
+      if (s > bestScore) {
+        bestScore = s;
+        best = pool[i];
+      }
+    }
+    return best;
   }
 
   function buildUtterance(text) {
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.9;
-    u.pitch = 1.05;
+    u.rate = 0.75;
+    u.pitch = 0.97;
     const voice = pickVoice();
     if (voice) u.voice = voice;
     return u;
@@ -231,16 +236,17 @@
     window.speechSynthesis.speak(u);
   }
 
-  function startSpeech(part) {
+  function startSpeech() {
     if (!currentStory || !currentStory.paragraphs.length) return;
     window.speechSynthesis.cancel();
 
-    const [start, end] = getParagraphSliceRange(part === "restart" ? "full" : part);
-    const slice = currentStory.paragraphs.slice(start, end);
-    if (!slice.length) return;
-
+    const slice = currentStory.paragraphs;
     const titleLine = "The story is called " + currentStory.title + ".";
     const texts = [titleLine].concat(slice);
+    const moralText = currentStory.moral && String(currentStory.moral).trim();
+    if (moralText) {
+      texts.push("The moral of the story is: " + moralText);
+    }
 
     utteranceQueue = [];
     texts.forEach(function (text, i) {
@@ -248,8 +254,10 @@
       u.onstart = function () {
         if (i === 0) {
           scrollToStoryTitle();
+        } else if (i <= slice.length) {
+          scrollToStoryParagraph(i - 1);
         } else {
-          scrollToStoryParagraph(start + i - 1);
+          scrollToStoryMoral();
         }
       };
       utteranceQueue.push(u);
@@ -282,23 +290,16 @@
       if (!topic) return;
       selectedTopic = topic;
       updateTopicUi();
+      const avoid = lastIndexByTopic[topic] != null ? lastIndexByTopic[topic] : null;
+      showStoryForTopic(topic, avoid);
+      if (currentStory) startSpeech();
     });
   });
-
-  if (btnTonightStory) {
-    btnTonightStory.addEventListener("click", () => {
-      if (!selectedTopic) {
-        renderPlaceholder("Choose a world first—<strong>Unicorn</strong>, <strong>Fantasy</strong>, <strong>Magic</strong>, or <strong>Fairies</strong>.");
-        return;
-      }
-      showStoryForTopic(selectedTopic, null);
-    });
-  }
 
   if (btnAnotherStory) {
     btnAnotherStory.addEventListener("click", () => {
       if (!selectedTopic) return;
-      showStoryForTopic(selectedTopic, lastIndexForTopic);
+      showStoryForTopic(selectedTopic, lastIndexByTopic[selectedTopic] ?? null);
     });
   }
 
@@ -309,20 +310,11 @@
       btnResume.disabled = true;
       return;
     }
-    startSpeech("full");
+    startSpeech();
   });
 
   if (btnRestart) {
-    btnRestart.addEventListener("click", () => startSpeech("restart"));
-  }
-  if (btnReadBegin) {
-    btnReadBegin.addEventListener("click", () => startSpeech("begin"));
-  }
-  if (btnReadMiddle) {
-    btnReadMiddle.addEventListener("click", () => startSpeech("middle"));
-  }
-  if (btnReadEnd) {
-    btnReadEnd.addEventListener("click", () => startSpeech("end"));
+    btnRestart.addEventListener("click", () => startSpeech());
   }
 
   btnPause.addEventListener("click", () => {
@@ -348,4 +340,5 @@
       window.speechSynthesis.getVoices();
     };
   }
+  window.speechSynthesis.getVoices();
 })();
